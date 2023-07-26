@@ -21,7 +21,7 @@ def control_spike_car(command: dict) -> None:
         ETRobot.move(0)
     elif command['code'] == "KeyF":
         ETRobot.move(45)
-    elif command['code'] == "Space":
+    elif command['code']== "Space":
         ETRobot.move(90)
     elif command['code'] == "KeyJ":
         ETRobot.move(135)
