@@ -1,6 +1,4 @@
-# from etrobocon.operate import control_spike_car
-import logging
-import time
+from etrobocon.operate import control_spike_car
 from logging.config import dictConfig
 from flask import (
     Flask,
@@ -8,6 +6,8 @@ from flask import (
     request,
     render_template
 )
+from etrobocon import get_frames
+
 
 app = Flask(__name__)
 
@@ -17,19 +17,18 @@ dictConfig({
     'formatters': {'default': {
         'format': '[%(levelname)s] %(asctime)s: %(message)s',
     }},
-    'handlers': {'etrobon': {
-        'class': 'logging.FileHandler',
-        'filename': './log/app.log',
+    'handlers': {'etrobocon': {
+        'class': 'logging.StreamHandler',
         'formatter': 'default'
     }},
     'root': {
         'level': 'INFO',
-        'handlers': ['etrobon']
+        'handlers': ['etrobocon']
     }
 })
 
 # Disable flask server logging
-logging.getLogger('werkzeug').disabled = True
+# logging.getLogger('werkzeug').disabled = True
 
 
 @app.route("/")
@@ -38,14 +37,13 @@ def index():
 
 @app.route("/video_feed")
 def video_feed():
-    return Response("Hello")
+    return Response(get_frames(), mimetype="multipart/x-mixed-replace; boundary=frame")
 
 @app.route('/keyboard_event', methods=['POST'])
 def keyboard_event():
     command = request.json
-    print(time.localtime())
     app.logger.info(command)
-    # control_spike_car(command)
+    control_spike_car(command)
     return Response(status=204)
 
 if __name__ == '__main__':

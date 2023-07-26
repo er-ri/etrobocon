@@ -1,3 +1,5 @@
+import time
+import pickle
 import serial
 
 class ETRobot(object):
@@ -7,13 +9,20 @@ class ETRobot(object):
 
     serial_port = serial.Serial(port='/dev/ttyAMA1', baudrate=115200, timeout=2)
 
+    recorder = {
+        'command':[],
+        'time':[]
+    }
+
     @classmethod
     def close_port(cls) -> None:
         cls.serial_port.close()
 
     @classmethod
     def _send_command(cls, command) -> None:
-        cls.serial.write(command)
+        cls.recorder['command'].append(command)
+        cls.recorder['time'].append(time.time())
+        cls.serial_port.write(command)
 
     @classmethod
     def move(cls, angle: int) -> None:
@@ -37,3 +46,9 @@ class ETRobot(object):
         """Stop lego spike."""
         id_byte = cls.STOP_ID.to_bytes(1, 'big')
         cls._send_command(id_byte)
+
+    @classmethod
+    def save_record(cls) -> None:
+        with open('data/command.pickle', 'wb') as file:
+            pickle.dump(cls.recorder, file)
+                    

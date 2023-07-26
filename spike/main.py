@@ -12,14 +12,14 @@ import hub
 import time
 import uasyncio
 
-MAX_IDEL_TIME = 3000    # Maximum idel time, unit: millisecond
-PWM_RATIO = 0.5         # Motor power = 90 * PWM_RATIO
+MAX_IDEL_TIME = 10000    # Maximum idel time, unit: millisecond
+PWM_RATIO = 0.3         # Motor power = 90 * PWM_RATIO
 
 PORT_MAP = {
-    "motor_A": "A",
-    "motor_B": "C",
-    "motor_C": "E",
-    "color_sensor": "B",
+    "motor_arm": "A",
+    "motor_right": "B",
+    "motor_left": "E",
+    "color_sensor": "C",
     "ultrasonic_sensor": "F",
     "serial_port": "D",
 }
@@ -45,16 +45,17 @@ class SpikeCar(object):
         hub.motion.yaw_pitch_roll(0)                    # yaw, pitch and roll
 
         # Set ports
-        self.motor_A = getattr(hub.port, PORT_MAP["motor_A"]).motor
-        self.motor_B = getattr(hub.port, PORT_MAP["motor_B"]).motor
-        self.motor_C = getattr(hub.port, PORT_MAP["motor_C"]).motor
+        self.motor_arm = getattr(hub.port, PORT_MAP["motor_arm"]).motor
+        self.motor_right = getattr(hub.port, PORT_MAP["motor_right"]).motor
+        self.motor_left = getattr(hub.port, PORT_MAP["motor_left"]).motor
         self.color_sensor = getattr(hub.port, PORT_MAP["color_sensor"]).device
         self.ultrasonic_sensor = getattr(hub.port, PORT_MAP["ultrasonic_sensor"]).device
         self.serial_port = getattr(hub.port, PORT_MAP['serial_port'])
-        # The port will operates as a raw full duplex logic level serial port
+
+        # The serial port will operates as a raw full duplex logic level(data can be transmitted in both directions send/receive)
         self.serial_port.mode(hub.port.MODE_FULL_DUPLEX)
-        # Transferring a maximum of 115200 bits per second.
-        time.sleep(1)   # prepare port
+        # Setup the serial port(take 1 second), and transferring a maximum of 115200 bits per second.
+        time.sleep(1)
         self.serial_port.baud(115200)
 
         # Clear serial port buffer(By reading all bytes)
@@ -64,7 +65,7 @@ class SpikeCar(object):
         # Millisecond counter for record the latest command executed time
         self.command_counter = time.ticks_ms()
 
-        image = hub.Image('R')
+        image = hub.Image.SMILE
         hub.display.show(image)
 
 
@@ -109,14 +110,13 @@ class SpikeCar(object):
         left_wheel_speed = min(angle, 90)
         right_wheel_speed = 90 if angle < 90 else 180 - angle
 
-        self.motor_A.pwm(int(left_wheel_speed * PWM_RATIO))
-        self.motor_B.pwm(int(right_wheel_speed * PWM_RATIO))
+        self.motor_left.pwm(int(left_wheel_speed * PWM_RATIO))
+        self.motor_right.pwm(-int(right_wheel_speed * PWM_RATIO))
 
 
     def stop_spike(self):
-        self.motor_A.pwm(0)
-        self.motor_B.pwm(0)
-        print("Lego Spike Prime Hub has been stopped.")
+        self.motor_left.pwm(0)
+        self.motor_right.pwm(0)
 
 
 async def receiver():
@@ -127,8 +127,7 @@ async def receiver():
             spike_car.execute_command(command_id, command_parameter)
 
         if time.ticks_ms() - spike_car.command_counter > MAX_IDEL_TIME:
-            print("Maximum idle time reached, terminate lego spike.")
-            return
+            raise SystemExit("Maximum idle time reached, terminate lego spike.")
 
         await uasyncio.sleep(0)
 
@@ -137,7 +136,7 @@ async def main_task():
     tasks = list()
     task = uasyncio.create_task(receiver())
     tasks.append(task)
-    await uasyncio.sleep(1*9)     # Max running time, unit: seconds
+    await uasyncio.sleep(1*60)     # Max running time, unit: seconds
 
     # Cancel all tasks.
     for task in tasks:
@@ -147,7 +146,11 @@ async def main_task():
 gc.collect()
 print("Started")
 
-spike_car = SpikeCar()
-uasyncio.run(main_task())
+try:
+    spike_car = SpikeCar()
+    uasyncio.run(main_task())
+except SystemExit as se:
+    print(se)
 
+hub.display.show(hub.Image.ASLEEP)
 print("Ended")

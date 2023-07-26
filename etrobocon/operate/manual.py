@@ -1,8 +1,7 @@
-import json
 from etrobocon import ETRobot
 
 
-def control_spike_car(command: str) -> None:
+def control_spike_car(command: dict) -> None:
     """Interpret user keyboard input to etrobot commands.
 
     Args:
@@ -18,20 +17,19 @@ def control_spike_car(command: str) -> None:
         | "K" | 180 | FUll Right |
 
     """
-    command = json.loads(command)
-
-    match command['code']:
-        case "KeyD":
-            ETRobot.move(0)
-        case "KeyF":
-            ETRobot.move(45)
-        case "Space":
-            ETRobot.move(90)
-        case "KeyJ":
-            ETRobot.move(135)
-        case "KeyK":
-            ETRobot.move(180)
-        case "KeyB":
-            ETRobot.stop()
-        case _:
-            pass
+    if command['code'] == "KeyD":
+        ETRobot.move(0)
+    elif command['code'] == "KeyF":
+        ETRobot.move(45)
+    elif command['code'] == "Space":
+        ETRobot.move(90)
+    elif command['code'] == "KeyJ":
+        ETRobot.move(135)
+    elif command['code'] == "KeyK":
+        ETRobot.move(180)
+    elif command['code'] == "KeyB":
+        ETRobot.stop()
+    elif command['code'] == "KeyT":
+        ETRobot.save_record()
+    else:
+        pass

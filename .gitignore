@@ -2,6 +2,7 @@
 *.ipynb
 *.swp
 test*.py
+data/
 
 # vscode
 .vscode
