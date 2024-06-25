@@ -7,7 +7,11 @@ Repo for ETRobo contest 2024
 └── etrobocon/
     ├── spike/
     │   └── main.py                 # Function used in LEGO Spike Prime Hub
-    └── controller/
-        └── etrobot.py              # Object for controlling ETRobot in Raspberry Pi
+    └── etrobocon/
+        └── etrobot.py              # Wrapped class for controlling ETRobot in Raspberry Pi
 ```
 
+## Getting Started
+*  Run the following command to launch flask server
+
+        flask run --host=0.0.0.0

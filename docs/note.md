@@ -48,8 +48,14 @@ An asynchronous connection between Raspberry Pi and SPIKE Prime Hub is implement
 
 ---
 
+## Computer Vision
+Grayscale -> Gaussian Blur
+canny(Identify the edge by calculating the image's gradient)
+region of interest(masking)
+hough transform(Hough Space /theta: perpendicular)
+
 ## Convolutional Neural Network(CNN)
-The Convolutional Neural Network (`ConvNet/CNN`) architecture typically contains three layers: a *convolutional layer*, a *pooling layer* and a *fully connected layer*.  
+Convolution is the process of taking a small matrix called the kernel and running it over all the pixels in an image. The Convolutional Neural Network (`ConvNet/CNN`) architecture typically contains three layers: a *convolutional layer*, a *pooling layer* and a *fully connected layer*.  
 
 ### Convolutional Layer
 The layer performs a dot product between the `kernel` and the corresponding area of the image. When the input image has more than one channel, the kernel will also need to be extended up to the same depth. The kernel convolutely moves from the left to the right for the input image with certain step(`stride`). For some cases, we need to augment the input image to a larger size, the technique is called `padding`. In the below example, the `stride` value equals to 1 and no `padding` is applied.  

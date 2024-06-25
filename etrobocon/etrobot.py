@@ -5,17 +5,18 @@ class ETRobot(object):
     MOVE_ID = 1
     STOP_ID = 9
 
-    def __init__(self) -> None:
-        self.serial = serial.Serial(
-            port='/dev/ttyAMA1', baudrate=115200, timeout=2)
+    serial_port = serial.Serial(port='/dev/ttyAMA1', baudrate=115200, timeout=2)
 
-    def close_port(self) -> None:
-        self.serial.close()
+    @classmethod
+    def close_port(cls) -> None:
+        cls.serial_port.close()
 
-    def _send_command(self, command) -> None:
-        self.serial.write(command)
+    @classmethod
+    def _send_command(cls, command) -> None:
+        cls.serial.write(command)
 
-    def move(self, angle: int) -> None:
+    @classmethod
+    def move(cls, angle: int) -> None:
         """Method to run lego spike.
 
         Args:
@@ -26,12 +27,13 @@ class ETRobot(object):
             '180': turn right(the power of right wheel is 0)
         
         """
-        id_byte = self.MOVE_ID.to_bytes(1, 'big') 
+        id_byte = cls.MOVE_ID.to_bytes(1, 'big') 
         parameter_byte = angle.to_bytes(1, 'big') 
 
-        self._send_command(id_byte + parameter_byte)
+        cls._send_command(id_byte + parameter_byte)
 
-    def stop(self) -> None:
+    @classmethod
+    def stop(cls) -> None:
         """Stop lego spike."""
-        id_byte = self.STOP_ID.to_bytes(1, 'big')
-        self._send_command(id_byte)
+        id_byte = cls.STOP_ID.to_bytes(1, 'big')
+        cls._send_command(id_byte)
