@@ -1,8 +1,8 @@
-# User define
 *.ipynb
 *.swp
 test*.py
-data/
+notebooks/
+*.pth
 
 # vscode
 .vscode

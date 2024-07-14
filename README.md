@@ -15,6 +15,14 @@ Repo for ETRobo contest 2024
         └── etrobot.py              # Wrapped class for controlling ETRobot in Raspberry Pi
 ```
 
+## ToDo
+1. Data collection & labeling
+2. Data preparation(augumentation, balancing, etc.)
+3. Imitation learning
+4. Reinforcement learning environment(gymnasium) 
+5. Model training
+
+
 ## Getting Started
 *  Run the following command to launch the flask server
 

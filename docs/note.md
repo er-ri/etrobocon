@@ -28,7 +28,7 @@ An asynchronous serial communication protocol for sending serial data over USB o
 
 !!! note "About the usage of `uasyncio`(`asyncio` for python)"
 
-    The statement `await asyncio.sleep(0)` will allow other tasks to run without blocking the current task for any significant amount of time. For the following code, the function will keep displaying the current time for 1 second. If you comment out the line `await asyncio.sleep(0)`, the function will keep running without termination.
+    The statement `await asyncio.sleep(0)` will allow other tasks to run without blocking the current task for any significant amount of time. For the following code, the function will keep displaying the current time for 1 second. If you comment out the line `await asyncio.sleep(0)`, the function will keep running and will not stop.
 
 ```python
 import asyncio
@@ -53,10 +53,26 @@ An asynchronous connection between Raspberry Pi and SPIKE Prime Hub is implement
 ---
 
 ## Computer Vision
-Grayscale -> Gaussian Blur
-canny(Identify the edge by calculating the image's gradient)
-region of interest(masking)
-hough transform(Hough Space /theta: perpendicular)
+| Conversion | Function |
+| --- | --- |
+| Grayscale | Reduce color information |
+| Gaussian Blur | Reduce noise and improve edge detection |
+| Canny Edge Detection | Detects edges in the image |
+| Region of Interest(ROI) | Focus on the part of image where lane lines are expected |
+| Hough Transform | Find the lines |
+| PID Controller | Stabilize the movement |
+
+
+### Hough Transform
+A computer vision technique that detects shapes like lines and curves in an image. It converts these shapes into mathematical representations in parameter space, making it easier to identify them even if they’re broken or obscured. 
+In the case of detecting straight lines. A **line** $y=ax+b$ can be represented as a **point** $(a,b)$ in the parameter space. Due to the vertical line or the horizontal line will lead to a infinite value of $b$ that poses a computational issues. Therefore, use the following form to describe the straight line instead.
+
+$$r=xcos\theta+ysin\theta$$
+
+Where $r$ is the distance from the origin to the closest point on the straight line, and $\theta$ is the angle between the $x$ axis and the line connecting the origin with that closest point. 
+
+For more details, see [here](https://homepages.inf.ed.ac.uk/rbf/HIPR2/hough.htm)
+
 
 ## Convolutional Neural Network(CNN)
 Convolution is the process of taking a small matrix called the kernel and running it over all the pixels in an image. The Convolutional Neural Network (`ConvNet/CNN`) architecture typically contains three layers: a *convolutional layer*, a *pooling layer* and a *fully connected layer*.  
@@ -75,6 +91,11 @@ Same as Convolutional Layer, `Pooling Layer` acts as role of reducing the dimens
 
 ### Fully Connected Layer
 A series of `linear layer` being used to extract specific information from the pooling layer outputs.   
+
+??? note "CNN Model Implementation"
+
+    Here we use the CNN model proposed by Nvidia in 2016.  
+    Original source: [End to End Learning for Self-Driving Cars](https://arxiv.org/abs/1604.07316)
 
 ---
 
