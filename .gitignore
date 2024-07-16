@@ -3,6 +3,7 @@
 test*.py
 notebooks/
 *.pth
+data/
 
 # vscode
 .vscode

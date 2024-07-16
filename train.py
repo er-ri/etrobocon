@@ -4,7 +4,7 @@ import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split
-from etrobocon.ml import NvidiaModel
+from etrobocon.models import NvidiaModel
 from etrobocon.data import transform, flip_transform, DrivingRecordDataset
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

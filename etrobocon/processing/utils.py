@@ -1,33 +1,5 @@
-# from etrobocon.operate import control_spike_car
 import cv2
 import numpy as np
-
-cam = cv2.VideoCapture(0)
-
-# Define the codec and create VideoWriter object
-fourcc = cv2.VideoWriter_fourcc(*"XVID")
-out = cv2.VideoWriter(
-    filename="data/output.avi", fourcc=fourcc, fps=20.0, frameSize=(640, 480)
-)
-
-# Recording function(Start & stop)
-# Current frame
-
-
-def get_frames():
-    while True:
-        success, frame = cam.read()
-        canny_image = canny(frame)
-
-        # Save video
-        out.write(canny_image)
-
-        if not success:
-            break
-        else:
-            ret, buffer = cv2.imencode(".png", canny_image)
-            frame = buffer.tobytes()
-            yield (b"--frame\r\n" b"Content-Type: image/png\r\n\r\n" + frame + b"\r\n")
 
 
 def make_points(image, line):
