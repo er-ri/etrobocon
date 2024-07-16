@@ -8,22 +8,30 @@ class ETRobot(object):
     MOVE_ID = 1
     STOP_ID = 9
 
-    serial_port = serial.Serial(port="/dev/ttyAMA1", baudrate=115200, timeout=2)
+    def __init__(self) -> None:
+        self.serial_port = serial.Serial(
+            port="/dev/ttyAMA1", baudrate=115200, timeout=2
+        )
+        self.section = 1
+        self.last_indicator = None
+        self.recorder = {"command": [], "time": []}
+        self.terminated = False
 
-    recorder = {"command": [], "time": []}
+    def _send_command(self, command) -> None:
+        self.recorder["command"].append(command)
+        self.recorder["time"].append(time.time())
+        self.serial_port.write(command)
 
-    @classmethod
-    def close_port(cls) -> None:
-        cls.serial_port.close()
+    def _receive_status(self, data):
+        pass
 
-    @classmethod
-    def _send_command(cls, command) -> None:
-        cls.recorder["command"].append(command)
-        cls.recorder["time"].append(time.time())
-        cls.serial_port.write(command)
+    def set_section(self, indicator) -> None:
+        if indicator == "WHITE" and self.last_indicator == "BLUE":
+            self.section += 1
 
-    @classmethod
-    def move(cls, angle: int) -> None:
+        self.last_indicator = indicator
+
+    def move(self, angle: int) -> None:
         """Method to run lego spike.
 
         Args:
@@ -34,17 +42,19 @@ class ETRobot(object):
             '180': turn right(the power of right wheel is 0)
 
         """
-        id_byte = cls.MOVE_ID.to_bytes(1, "big")
+        id_byte = self.MOVE_ID.to_bytes(1, "big")
         parameter_byte = angle.to_bytes(1, "big")
 
-        cls._send_command(id_byte + parameter_byte)
+        self._send_command(id_byte + parameter_byte)
 
-    @classmethod
-    def stop(cls) -> None:
-        id_byte = cls.STOP_ID.to_bytes(1, "big")
-        cls._send_command(id_byte)
+    def stop(self) -> None:
+        id_byte = self.STOP_ID.to_bytes(1, "big")
+        self._send_command(id_byte)
+        self.terminated = True
 
-    @classmethod
-    def save_record(cls) -> None:
+    def close_port(self) -> None:
+        self.serial_port.close()
+
+    def save_record(self) -> None:
         with open("data/command.pickle", "wb") as file:
-            pickle.dump(cls.recorder, file)
+            pickle.dump(self.recorder, file)

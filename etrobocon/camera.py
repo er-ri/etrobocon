@@ -10,6 +10,9 @@ out = cv2.VideoWriter(
     filename="data/output.avi", fourcc=fourcc, fps=20.0, frameSize=(640, 480)
 )
 
+# Recording function(Start & stop)
+# Current frame
+
 
 def get_frames():
     while True:
