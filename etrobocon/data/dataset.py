@@ -1,3 +1,6 @@
+"""Pytorch dataset definition including Data Augmentation
+"""
+
 import cv2
 import torch
 import albumentations as A
@@ -17,6 +20,7 @@ transform = A.Compose(
     ]
 )
 
+# Define the method separately, due to the steering angle(label) also need to be flipped if the transformer was applied
 flip_transform = A.ReplayCompose(
     [
         A.HorizontalFlip(p=0.5),
@@ -30,7 +34,7 @@ class DrivingRecordDataset(Dataset):
 
     1. `ShiftScaleRotate`
     2. `RandomBrightnessContrast`
-    3. `HorizontalFlip` (The steering angle also fliped if the method took effect)
+    3. `HorizontalFlip`
     """
 
     def __init__(self, image_paths, steerings, transform=None, flip_transform=None):

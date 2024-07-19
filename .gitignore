@@ -1,9 +1,8 @@
+# Model training & data collection
 *.ipynb
-*.swp
 test*.py
 notebooks/
 *.pth
-data/
 
 # vscode
 .vscode

@@ -13,10 +13,12 @@ import time
 import uasyncio
 
 MAX_IDEL_TIME = 10000  # Maximum idel time, unit: millisecond
-PWM_RATIO = 0.3  # Motor power = 90 * PWM_RATIO
 
 # Sensor Id
 COLOR_SENSOR_ID = 1
+
+# Debug mode, set to 'True' will only print the received command instead of actually execution
+DEBUG = True
 
 PORT_MAP = {
     "motor_arm": "A",
@@ -36,8 +38,8 @@ class SpikeCar(object):
     first byte indicates the command id while the second byte represents
     the corresponding parameters as shown below.
 
-    | Device | Command Id | Parameters |
-    | SteeringWheel | 0 | 0~180 |
+    | Device | Command Id | Parameter1 | Parameter2 |
+    | Motor | 0 | Power: 0~180 | Steering: -90 ~ 90  |
 
     """
 
@@ -78,61 +80,55 @@ class SpikeCar(object):
     def read_command(self):
         raw_bytes = self.serial_port.read(2)
         command_id = None
-        command_parameter = None
+        command_parameter1 = None
+        command_parameter2 = None
 
         if raw_bytes != b"":
             command_id = int.from_bytes(raw_bytes[0:1], "big")
-            command_parameter = int.from_bytes(raw_bytes[1:2], "big")
+            command_parameter1 = int.from_bytes(raw_bytes[1:2], "big")
+            command_parameter2 = int.from_bytes(raw_bytes[2:3], "big")
             self.command_counter = time.ticks_ms()
 
-        return command_id, command_parameter
+        return command_id, command_parameter1, command_parameter2
 
     def send_sensor_data(self, sensor_id, sensor_data):
         formated_data = "@{:0=1}:{:0=2}".format(sensor_id, int(sensor_data))
         self.serial_port.write(formated_data)
 
-    def execute_command(self, command_id, command_parameter):
+    def execute_command(self, command_id, command_parameter1, command_parameter2):
+        if DEBUG == True:
+            print(
+                "Command received, id={}; parameter1={}; parameter2={}".format(
+                    command_id, command_parameter1, command_parameter2
+                )
+            )
         if command_id == 1:
-            self._move(command_parameter)
+            self._set_motor_power(command_parameter1, command_parameter2)
         elif command_id == 9:
             self.stop_spike()
         else:
-            print(
-                "Unknow command received, id={}; parameter={}".format(
-                    command_id, command_parameter
-                )
-            )
+            pass
 
-    def _move(self, angle):
+    def _set_motor_power(self, left_power: int, right_power: int) -> None:
         """Method to control the steering wheel angle.
 
         Args:
-            angle: Steering wheel angle with the range of '0 ~ 180'
-
-        Note:
-            '0' means turn left while '180' means turn right.
+            left_power: Left wheel power(0~100)
+            right_power: Right wheel power(0~100)
         """
-        if angle > 180:
-            return
-
         self.command_counter = time.ticks_ms()
 
-        left_wheel_speed = min(angle, 90)
-        right_wheel_speed = 90 if angle < 90 else 180 - angle
-
-        self.motor_left.pwm(int(left_wheel_speed * PWM_RATIO))
-        self.motor_right.pwm(-int(right_wheel_speed * PWM_RATIO))
-
-    def stop_spike(self):
-        self.motor_left.pwm(0)
-        self.motor_right.pwm(0)
+        self.motor_left.pwm(int(left_power))
+        self.motor_right.pwm(-int(right_power))
 
 
 async def receiver():
     while True:
-        command_id, command_parameter = spike_car.read_command()
+        command_id, command_parameter1, command_parameter2 = spike_car.read_command()
         if command_id != None:
-            spike_car.execute_command(command_id, command_parameter)
+            spike_car.execute_command(
+                command_id, command_parameter1, command_parameter2
+            )
 
         if time.ticks_ms() - spike_car.command_counter > MAX_IDEL_TIME:
             raise SystemExit("Maximum idle time reached, terminate lego spike.")

@@ -9,8 +9,7 @@ from etrobocon.data import transform, flip_transform, DrivingRecordDataset
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-# Initialize TensorBoard writer
-# `tensorboard --logdir=runs`
+# TensorBoard, visualize the log by running: `tensorboard --logdir=runs`
 writer = SummaryWriter()
 
 # Balanced dataset, not implementated
@@ -50,7 +49,6 @@ for epoch in range(num_epochs):
 
         running_loss += loss.item()
 
-    # Calculate average training loss
     avg_train_loss = running_loss / len(train_loader)
 
     # Validation
@@ -63,10 +61,8 @@ for epoch in range(num_epochs):
             loss = criterion(outputs, labels)
             val_loss += loss.item()
 
-    # # Calculate average validation loss and accuracy
     avg_val_loss = val_loss / len(val_loader)
 
-    # Write to TensorBoard
     writer.add_scalar("Loss/train", avg_train_loss, epoch)
     writer.add_scalar("Loss/val", avg_val_loss, epoch)
 
@@ -74,7 +70,6 @@ for epoch in range(num_epochs):
         f"Epoch {epoch+1}/{num_epochs}, Train Loss: {avg_train_loss:.4f}, Val Loss: {avg_val_loss:.4f}"
     )
 
-# Close TensorBoard writer
 writer.close()
 
 

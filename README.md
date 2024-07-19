@@ -1,5 +1,7 @@
 # ET Robot Contest
-Repo for ETRobo contest 2024
+Project for ETRobo contest 2024
+
+* Official Github: https://github.com/ETrobocon 
 
 ## Project Structure
 ```
@@ -7,23 +9,26 @@ Repo for ETRobo contest 2024
 └── etrobocon/
     ├── docs/                       # Documentation
     ├── spike/
-    │   └── main.py                 # Function used in LEGO Spike Prime Hub
-    └── etrobocon/
-        ├── operate/
-        │   ├── manual.py
-        │   └── auto.py
-        └── etrobot.py              # Wrapped class for controlling ETRobot in Raspberry Pi
+    │   └── main.py                 # Program on LEGO Spike Prime for interacting with Raspberry Pi 
+    ├── etrobocon/
+    │   ├── data/
+    │   │   ├── dataset.py          # Pytorch dataset definition
+    │   │   └── preprocess.py       # Data preprocessing
+    │   ├── models/
+    │   │   └── nvidia.py           # Model definition
+    │   ├── unit/
+    │   │   └── etrobot.py          # Interface for controlling the ETRobot
+    │   └── utils/
+    │       ├── follower.py         # Line follower implementation
+    │       └── image.py            # Methods related to computer vision 
+    ├── saved/                      # Folder for storing videos and trained models
+    ├── run.py                      # Entry point for starting the robot
+    ├── train.py                    # Script for performing the training task
+    ├── receiver.py                 # Script for receiving Raspberry Pi camera(Running on Win/Unix)
+    ├── requirements.txt            # Win/Unix dependencies for performing tasks of model training & data augmentation
+    ├── requirements-reap.txt       # Raspberry Pi dependencies for running the ETRobot
+    ├── mkdocs.yml                  # Mkdocs configuration file
+    ├── .readthedocs.yaml           # ReadtheDocs configuration file
+    └── README.md                   # This file
 ```
 
-## ToDo
-1. Data collection & labeling
-2. Data preparation(augumentation, balancing, etc.)
-3. Imitation learning
-4. Reinforcement learning environment(gymnasium) 
-5. Model training
-
-
-## Getting Started
-*  Run the following command to launch the flask server
-
-        flask run --host=0.0.0.0
