@@ -20,7 +20,7 @@ transform = A.Compose(
     ]
 )
 
-# Define the method separately, due to the steering angle(label) also need to be flipped if the transformer was applied
+# Define the method separately, for the steering angle(label) also need to be flipped if the transformer was applied
 flip_transform = A.ReplayCompose(
     [
         A.HorizontalFlip(p=0.5),

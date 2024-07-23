@@ -1,4 +1,5 @@
 import serial
+import threading
 
 
 class ETRobot(object):
@@ -9,16 +10,16 @@ class ETRobot(object):
         self.serial_port = serial.Serial(
             port="/dev/ttyAMA1", baudrate=115200, timeout=2
         )
-        self.section = 1
-        self.terminated = False
+        self.is_running = True
 
     def _send_command(self, command) -> None:
         self.serial_port.write(command)
 
-    def _receive_status(self, data):
-        raise NotImplementedError
+    def update_status(self):
+        """Update ETRobot motor and sensor status from recieved data from GPIO port"""
 
-    def set_section(self) -> None:
+        # Read and update ETRobot status
+
         raise NotImplementedError
 
     def set_motor_power(self, power: int, steering: int) -> None:
