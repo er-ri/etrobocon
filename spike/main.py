@@ -7,12 +7,15 @@ through GPIO. The asynchronous communication with Raspberry Pi was
 implemented by the micropython package `uasyncio`.  
 
 Appendix:
+
 **Color Sensor**
+
+The Color Sensor can give the following data:
 
 | Mode | Output | Description |
 | --- | --- | --- |
-| Color(0) | -1 ~ 10 | Each number represents a detected color |
-| Reflected(1) | 0 ~ 100 | 0% = no reflection, 100% = very reflective |
+| Color(2) | -1 ~ 10 | Each number represents a detected color |
+| Reflected(3) | 0 ~ 100 | 0% = no reflection, 100% = very reflective |
 | Ambient(2) | 0 ~ 100 | 0% = dark, 100% = bright |
 
 Set the mode and retrieve the sensor data in the following way
@@ -24,27 +27,25 @@ color_sensor.mode(0)
 ret = color_sensor.get()
 ```
 
+Ref: https://ev3-help-online.api.education.lego.com/Retail/en-us/page.html?Path=editor%2FUsingSensors_Color.html
+
 """
 import gc
 import hub
 import time
 import uasyncio
 
-MAX_IDEL_TIME = 10000  # Maximum idel time, unit: millisecond
-
-
-# Debug mode, set to 'True' will only print the received command instead of actually execution
-DEBUG = True
+MAX_IDEL_TIME = 15000  # Maximum idel time, unit: millisecond
 
 # Command ID list
 COMMAND_MOTOR_ID = 1
 COMMAND_ARM_ID = 2
 
 PORT_MAP = {
-    "motor_arm": "A",
+    "motor_arm": "C",
     "motor_right": "B",
     "motor_left": "E",
-    "color_sensor": "C",
+    "color_sensor": "A",
     "ultrasonic_sensor": "F",
     "serial_port": "D",
 }
@@ -85,8 +86,14 @@ class SpikeCar(object):
         time.sleep(1)
         self.serial_port.baud(115200)
 
-        # Mode that set the return value represents different colors, e.g. "3: Blue; 5: Green"
-        self.color_sensor.mode(0)
+        # Initialization & Set motors mode to measure its relative position on boot
+        self.motor_left.mode([(2, 0)])
+        self.motor_right.mode([(2, 0)])
+        self.motor_left.preset(0)
+        self.motor_right.preset(0)
+
+        # Set color sensor to reflection mode
+        self.color_sensor.mode(1)
 
         # Clear serial port buffer
         while self.serial_port.read(100) != b"":
@@ -98,7 +105,7 @@ class SpikeCar(object):
         hub.display.show(hub.Image.SMILE)
 
     def read_command(self):
-        raw_bytes = self.serial_port.read(2)
+        raw_bytes = self.serial_port.read(3)
         command_id = None
         command_parameter1 = None
         command_parameter2 = None
@@ -118,22 +125,31 @@ class SpikeCar(object):
         Note:
             Sent data are following the below format
 
-            xxxxxx
-        """
-        # Motor's count `get_count()`
-        # Color sensor's brightness
+            122
 
-        formated_data = "@{:0=1}:{:0=2}".format()
-        self.serial_port.write(formated_data)
+            Where '1' is the reflection(color sensor), '2' is the motor count
+        """
+        reflection = self.color_sensor.get()
+        motor_count = self.motor_left.get()
+        
+        # if motor_count != 0:
+        #     print(motor_count)
+
+        reflection_byte = reflection[0].to_bytes(1, "big")
+        motor_count_byte = motor_count[0].to_bytes(2, "big")
+
+        status_data = reflection_byte + motor_count_byte
+        self.serial_port.write(status_data)
 
     def execute_command(self, command_id, command_parameter1, command_parameter2):
-        if DEBUG == True:
-            print(
-                "Command received, id={}; parameter1={}; parameter2={}".format(
-                    command_id, command_parameter1, command_parameter2
-                )
+  
+        print(
+            "Command received, id={}; parameter1={}; parameter2={}".format(
+                command_id, command_parameter1, command_parameter2
             )
-        elif command_id == COMMAND_MOTOR_ID:
+        )
+        
+        if command_id == COMMAND_MOTOR_ID:
             self._set_motor_power(command_parameter1, command_parameter2)
         elif command_id == COMMAND_ARM_ID:
             pass
@@ -169,12 +185,13 @@ async def receiver():
 
 async def sender():
     while True:
-        spike_car.send_sensor_data()
-        await uasyncio.sleep(0.0005)
+        spike_car.send_status()
+        await uasyncio.sleep(0.05)      # Send data 20 times per second
 
 
 async def main_task():
     tasks = list()
+
     receiver_task = uasyncio.create_task(receiver())
     tasks.append(receiver_task)
     sender_task = uasyncio.create_task(sender())
@@ -190,6 +207,8 @@ async def main_task():
 # triggers a garbage collection cycle
 gc.collect()
 
+print("Starting LEGO Prime Hub..")
+
 try:
     spike_car = SpikeCar()
     uasyncio.run(main_task())
@@ -197,3 +216,5 @@ except SystemExit as e:
     print(e)
 
 hub.display.show(hub.Image.ASLEEP)
+
+print("Completed")
