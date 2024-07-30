@@ -1,28 +1,41 @@
-"""Line follower
+"""
+Line Follower
 
-The module contains line follower implementation of camera based and colorsensor based, 
-which are used for training data collection for the model. By sending the input data
-such as camera image or sensor status, the function will return the steering angle. 
+This module contains implementations of line-following algorithms using camera-based 
+and color sensor-based methods. These implementations are used for training data 
+collection for a model. By sending input data such as a camera image or sensor status, 
+the functions return the steering angle or necessary adjustments.
+
+Functions:
+    steer_by_camera(roi: np.ndarray) -> tuple[float, dict]:
+        Calculates the steering adjustment based on the difference between the 
+        center of the Region of Interest (ROI) and the centroid of the largest contour 
+        in the x-coordinate.
+
+    steer_by_reflection(reflection: int, threshold: int) -> int:
+        Determines the steering adjustment based on light reflectivity detected by 
+        a color sensor, guiding the robot to follow the edge of a line.
 """
 
 import cv2
-import math
 import numpy as np
 
 
-def steer_by_camera(image: np.ndarray) -> tuple[float, dict]:
-    """Function used for line follower by calculating its steering angle for the given image
+def steer_by_camera(roi: np.ndarray) -> tuple[float, dict]:
+    """Calculates the steering adjustment for a LEGO line follower by determining the
+    difference between the center of the Region of Interest (ROI) and the centroid
+    of the largest contour in the x-coordinate.
 
     Args:
-        image: input image from raspiberry pi camera
+        roi (np.ndarray): Input image from Raspberry Pi camera.
 
     Returns:
-        steering: wheel steering angle
-        info: driving information for inspecition
+        distance (float): Distance between the center of the ROI and the centroid in x coordinates.
+        info (dict): Driving information for inspection, including the largest contour and its centroid coordinates.
     """
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
     blur = cv2.GaussianBlur(gray, (5, 5), 0)
-    ret, thresh = cv2.threshold(blur, 100, 255, cv2.THRESH_BINARY_INV)
+    _, thresh = cv2.threshold(blur, 100, 255, cv2.THRESH_BINARY_INV)
 
     # Erode to eliminate noise, Dilate to restore eroded parts of image
     mask = cv2.erode(thresh, None, iterations=2)
@@ -32,15 +45,28 @@ def steer_by_camera(image: np.ndarray) -> tuple[float, dict]:
 
     max_contour = max(contours, key=cv2.contourArea)
 
-    [vx, vy, x, y] = cv2.fitLine(max_contour, cv2.DIST_L2, 0, 0.01, 0.01)
+    mu = cv2.moments(max_contour)
+    # Add 1e-5 to avoid division by zero
+    mx = mu["m10"] / (mu["m00"] + 1e-5)
+    my = mu["m01"] / (mu["m00"] + 1e-5)
 
-    line_angle = math.atan2(vy[0], vx[0])
-    line_angle += math.pi / 2 if line_angle < 0 else -math.pi / 2
+    # Distance between ROI center and the centroid in x coordinates
+    distance = mx - (roi.shape[1] / 2)
 
-    steering = math.degrees(line_angle)
-
-    return steering, {vx[0], vy[0], x[0], y[0]}
+    return distance, {"max_contour": max_contour, "mx": mx, "my": my}
 
 
-def follow_line_by_sensor():
-    raise NotImplementedError
+def steer_by_reflection(reflection: int, threshold: int) -> int:
+    """Determines the steering adjustment based on light reflectivity detected by a color sensor.
+    The robot follows the edge of a line, turning one way when it detects more light reflectivity
+    (whitish color) and the other way when it detects less light reflectivity (darkish color).
+
+    Args:
+        reflection (int): Light reflection value (white: 100, black: 0).
+        threshold (int): The value to trigger the robot's turning.
+
+    Returns:
+        reflection_diff (int): The difference between the detected reflection value and the threshold.
+    """
+    reflection_diff = reflection - threshold
+    return reflection_diff

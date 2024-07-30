@@ -63,5 +63,5 @@ def extract_roi_and_resize(
 
 
 def draw_driving_info():
-    """Draw the current ETRobot driving information for real-time inspection"""
+    """Draw the current ETRobot driving information for the real-time inspection"""
     raise NotImplementedError

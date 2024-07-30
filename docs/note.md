@@ -5,6 +5,14 @@ For ET robot contest 2024
 1. The newest opencv may not work on Raspberry Pi, install the specific version(4.5.3.56) with the [steps](https://raspberrypi-guide.github.io/programming/install-opencv) and the specific version of numpy is also required(1.26.4).
 2. Enable legacy camera API: `sudo raspi-config` -> 3(Interface Config) -> 1(Legacy Camera), reboot.
 
+## PID Controller
+$$ u(t)=K_{p}e(t)+K_{i}\int_{0}^{t}e(\tau)d\tau+K_{d}\frac{de(t)}{dt} $$
+
+https://softinery.com/blog/implementation-of-pid-controller-in-python/
+
+https://en.wikipedia.org/wiki/Proportional%E2%80%93integral%E2%80%93derivative_controller
+
+
 ## Hardware & Protocol
 Description of the hardware of Raspberry Pi, LEGO Spike Prime Hub, and the protocols used for communication between them.
 

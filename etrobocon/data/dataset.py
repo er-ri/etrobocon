@@ -49,7 +49,7 @@ class DrivingRecordDataset(Dataset):
     def __getitem__(self, idx):
         image_path = self.image_paths[idx]
         image = cv2.imread(image_path)
-        image = image[60:135, :, :]
+        image = image[60:135, :, :]  # ROI
         image = cv2.cvtColor(image, cv2.COLOR_RGB2YUV)
         image = cv2.GaussianBlur(image, (3, 3), 0)
         image = cv2.resize(image, (200, 66))
