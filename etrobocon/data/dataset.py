@@ -7,6 +7,7 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2
 from torch.utils.data import Dataset
 
+
 transform = A.Compose(
     [
         A.ShiftScaleRotate(

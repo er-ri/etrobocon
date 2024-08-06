@@ -32,7 +32,7 @@ class ETRobot(object):
         Note:
             The update rate should be less than the rate of sending sensor data in LEGO Prime Hub (0.05 seconds).
         """
-        self._serial_port.flush()
+        self.__serial_port.flush()
 
         while self.is_running:
             status_data = self.__serial_port.read(3)

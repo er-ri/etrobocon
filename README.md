@@ -1,13 +1,10 @@
 # ET Robot Contest
 Project for ETRobo contest 2024
 
-* Official Github: https://github.com/ETrobocon 
+## Abstract
+The project uses a LEGO Prime Hub and a Raspberry Pi to implement a line follower based on a CNN model that was proposed by Nvidia in 2016[1]. The CNN model predicts the offset to the center of the detected line that needs to be followed. The output power is calculated from the offset by a PID controller. 
 
-
-
-PID Controller Tuning: Ziegler–Nichols method
-
-## Project Structure
+## Folder Structure
 ```
 .                        
 └── etrobocon/
@@ -19,7 +16,7 @@ PID Controller Tuning: Ziegler–Nichols method
     │   │   ├── dataset.py          # Pytorch dataset definition
     │   │   └── preprocess.py       # Data preprocessing
     │   ├── models/
-    │   │   └── nvidia.py           # "End to End Learning for Self-Driving Cars" model definition
+    │   │   └── nvidia.py           # Model definition
     │   ├── unit/
     │   │   └── etrobot.py          # Interface for controlling the ETRobot
     │   └── utils/
@@ -27,7 +24,7 @@ PID Controller Tuning: Ziegler–Nichols method
     │       ├── image.py            # Methods related to computer vision 
     │       └── pid.py              # PIDController implementation
     ├── storage/                    # Folder for storing training data and trained models
-    ├── run.py                      # Entry point for starting the robot
+    ├── run.py                      # Starting ETRobot
     ├── train.py                    # Script for performing the training task
     ├── receiver.py                 # Script for receiving Raspberry Pi camera (Running on Win/Unix)
     ├── requirements.txt            # Win/Unix dependencies for performing tasks of model training & data augmentation
@@ -39,3 +36,6 @@ PID Controller Tuning: Ziegler–Nichols method
 
 
 
+
+## References
+1. [End to End Learning for Self-Driving Cars](https://arxiv.org/abs/1604.07316)

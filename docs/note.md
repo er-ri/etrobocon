@@ -2,7 +2,7 @@
 For ET robot contest 2024
 
 ## Getting Started
-1. The newest opencv may not work on Raspberry Pi, install the specific version(4.5.3.56) with the [steps](https://raspberrypi-guide.github.io/programming/install-opencv) and the specific version of numpy is also required(1.26.4).
+1. The newest opencv may not work on Raspberry Pi, install the specific version(4.5.3.56) follow the [steps](https://raspberrypi-guide.github.io/programming/install-opencv) and the specific version of numpy is also required(1.26.4).
 2. Enable legacy camera API: `sudo raspi-config` -> 3(Interface Config) -> 1(Legacy Camera), reboot.
 
 ## PID Controller
@@ -68,6 +68,7 @@ An asynchronous connection between Raspberry Pi and SPIKE Prime Hub is implement
 | Canny Edge Detection | Detects edges in the image |
 | Region of Interest(ROI) | Focus on the part of image where lane lines are expected |
 | Hough Transform | Find the lines |
+| Moments | Weighted averages (or moments) of the image pixels' intensities |
 | PID Controller | Stabilize the movement |
 
 

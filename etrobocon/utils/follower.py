@@ -4,7 +4,7 @@ Line Follower
 This module contains implementations of line-following algorithms using camera-based 
 and color sensor-based methods. These implementations are used for training data 
 collection for a model. By sending input data such as a camera image or sensor status, 
-the functions return the steering angle or necessary adjustments.
+the functions return the necessary adjustments.
 
 Functions:
     steer_by_camera(roi: np.ndarray) -> tuple[float, dict]:
@@ -27,14 +27,13 @@ def steer_by_camera(roi: np.ndarray) -> tuple[float, dict]:
     of the largest contour in the x-coordinate.
 
     Args:
-        roi (np.ndarray): Input image from Raspberry Pi camera.
+        roi (np.ndarray): ROI, a gray image is expected.
 
     Returns:
         distance (float): Distance between the center of the ROI and the centroid in x coordinates.
         info (dict): Driving information for inspection, including the largest contour and its centroid coordinates.
     """
-    gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
-    blur = cv2.GaussianBlur(gray, (5, 5), 0)
+    blur = cv2.GaussianBlur(roi, (5, 5), 0)
     _, thresh = cv2.threshold(blur, 100, 255, cv2.THRESH_BINARY_INV)
 
     # Erode to eliminate noise, Dilate to restore eroded parts of image
