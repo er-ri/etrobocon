@@ -25,6 +25,7 @@ The project uses a LEGO Prime Hub and a Raspberry Pi to implement a line followe
     │       └── pid.py              # PIDController implementation
     ├── storage/                    # Folder for storing training data and trained models
     ├── run.py                      # Starting ETRobot
+    ├── collector.py                # For collecting training data
     ├── train.py                    # Script for performing the training task
     ├── receiver.py                 # Script for receiving Raspberry Pi camera (Running on Win/Unix)
     ├── requirements.txt            # Win/Unix dependencies for performing tasks of model training & data augmentation

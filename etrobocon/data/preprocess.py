@@ -1,19 +1,26 @@
 """
-Module for data preprocessing including data balancing, data labelling and visualization.
+This module provides functions for labeling and balancing datasets of image frames.
+
+Functions:
+    label_dataset(path_pattern: str, output_csv: str, roi: tuple[int, int, int, int]) -> pd.DataFrame:
+        Labels all the frame files in the provided path pattern and saves the 'frame-distance' pairs to a CSV file.
+        
+    balance_dataset(df: pd.DataFrame, col_name: str, max_samples: int, num_bins: int) -> pd.DataFrame:
+        Balances the dataset by limiting the number of samples in each bin of a specified column.
 """
 
 import cv2
 import glob
+import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 from tqdm import tqdm
+from sklearn.utils import shuffle
 from etrobocon.utils import steer_by_camera
 
-# Define the Region of Interest (ROI) coordinates
-REGION_OF_INTEREST = (100, 200, 540, 300)
 
-
-def label_dataset(path_pattern: str, output_csv: str) -> pd.DataFrame:
+def label_dataset(
+    path_pattern: str, output_csv: str, roi: tuple[int, int, int, int]
+) -> pd.DataFrame:
     """
     Labels all the frame files in the provided path pattern and saves the 'frame-distance' pairs to a CSV file.
 
@@ -28,11 +35,11 @@ def label_dataset(path_pattern: str, output_csv: str) -> pd.DataFrame:
         Read the csv file to DataFrame by `df = pd.read_csv('./label.csv')`
     """
 
-    x1, y1, x2, y2 = REGION_OF_INTEREST
+    x1, y1, x2, y2 = roi
 
     # Get list of all file paths matching the pattern
     file_paths = glob.glob(path_pattern)
-    data = []
+    data = list()
 
     # Process each file
     for file_path in tqdm(file_paths):
@@ -51,14 +58,45 @@ def label_dataset(path_pattern: str, output_csv: str) -> pd.DataFrame:
     return df
 
 
-def visualize_distribution(df: pd.DataFrame, col_name: str, bins: int) -> None:
+def balance_dataset(
+    df: pd.DataFrame, col_name: str, max_samples: int, num_bins: int
+) -> pd.DataFrame:
+    """
+    Balances the dataset by limiting the number of samples in each bin of a specified column.
 
-    plt.hist(df[col_name], bins=bins, color="skyblue", edgecolor="black")
+    This function creates a histogram of the specified column and ensures that no bin has more than
+    `max_samples` samples. If a bin exceeds this limit, excess samples are randomly removed to balance
+    the dataset.
 
-    # Adding labels and title
-    plt.xlabel("Values")
-    plt.ylabel("Frequency")
-    plt.title("Data Distribution")
+    Args:
+        df (pd.DataFrame): The input DataFrame containing the data to be balanced.
+        col_name (str): The name of the column to be used for creating bins.
+        max_samples (int): The maximum number of samples allowed per bin.
+        num_bins (int): The number of bins to divide the column into.
 
-    # Display the plot
-    plt.show()
+    Returns:
+        pd.DataFrame: A DataFrame with the dataset balanced according to the specified column and bin limits.
+    """
+
+    hist, bins = np.histogram(df[col_name], num_bins)
+
+    # Initialize an empty list to store indices to remove
+    remove_list = list()
+
+    # Iterate over each bin
+    for i in range(num_bins):
+        # Get the indices of the samples in the current bin
+        bin_indices = df[
+            (df[col_name] >= bins[i]) & (df[col_name] <= bins[i + 1])
+        ].index.tolist()
+
+        # Shuffle the indices
+        bin_indices = shuffle(bin_indices)
+
+        # If the number of samples in the bin exceeds the limit, add the excess to the remove list
+        if len(bin_indices) > max_samples:
+            remove_list.extend(bin_indices[max_samples:])
+
+    # Drop the rows from the DataFrame
+    df = df.drop(remove_list)
+    return df

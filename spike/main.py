@@ -42,10 +42,10 @@ COMMAND_MOTOR_ID = 1
 COMMAND_ARM_ID = 2
 
 PORT_MAP = {
-    "motor_arm": "C",
+    "motor_arm": "A",
     "motor_right": "B",
     "motor_left": "E",
-    "color_sensor": "A",
+    "color_sensor": "C",
     "ultrasonic_sensor": "F",
     "serial_port": "D",
 }
@@ -102,7 +102,7 @@ class SpikeCar(object):
         # Millisecond counter for record the latest command executed time, maximum idle time
         self.command_counter = time.ticks_ms()
 
-        hub.display.show(hub.Image.SMILE)
+        hub.display.show(hub.Image.HEART)
 
     def read_command(self):
         raw_bytes = self.serial_port.read(3)
@@ -131,7 +131,7 @@ class SpikeCar(object):
         """
         reflection = self.color_sensor.get()
         motor_count = self.motor_left.get()
-        
+
         # if motor_count != 0:
         #     print(motor_count)
 
@@ -142,13 +142,13 @@ class SpikeCar(object):
         self.serial_port.write(status_data)
 
     def execute_command(self, command_id, command_parameter1, command_parameter2):
-  
+
         print(
             "Command received, id={}; parameter1={}; parameter2={}".format(
                 command_id, command_parameter1, command_parameter2
             )
         )
-        
+
         if command_id == COMMAND_MOTOR_ID:
             self._set_motor_power(command_parameter1, command_parameter2)
         elif command_id == COMMAND_ARM_ID:
@@ -186,7 +186,7 @@ async def receiver():
 async def sender():
     while True:
         spike_car.send_status()
-        await uasyncio.sleep(0.05)      # Send data 20 times per second
+        await uasyncio.sleep(0.05)  # Send data 20 times per second
 
 
 async def main_task():
@@ -217,4 +217,4 @@ except SystemExit as e:
 
 hub.display.show(hub.Image.ASLEEP)
 
-print("Completed")
+print("Ended")

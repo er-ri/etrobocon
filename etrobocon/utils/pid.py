@@ -1,3 +1,6 @@
+import time
+
+
 class PIDController:
     """
     A PID (Proportional-Integral-Derivative) controller is a control loop mechanism widely used in industrial control systems.
@@ -37,29 +40,33 @@ class PIDController:
         self.setpoint = setpoint
         self.output_limits = output_limits
 
-        self._previous_error = 0.0
+        self._last_time = None
+        self._last_error = 0.0
         self._integral = 0.0
 
-    def update(self, measured_value: float, delta_time: float) -> int:
+    def update(self, measured_value: float) -> int:
         """
         Calculate the control variable based on the measured value.
 
         Args:
             measured_value (float): The current value of the process variable.
-            delta_time (float): Interval between two updates.
 
         Returns:
             int: Control output, typically used for wheel steering or other control mechanisms.
         """
+        current_time = time.time()
         error = self.setpoint - measured_value
-        self._integral += error * delta_time
-        derivative = (
-            (error - self._previous_error) / delta_time if delta_time > 0 else 0.0
+
+        delta_time = (
+            current_time - self._last_time if self._last_time is not None else 0
         )
+        delta_error = error - self._last_error
 
+        self._integral += error * delta_time
+        derivative = delta_error / delta_time if delta_time > 0 else 0
+
+        # Calculate PID output
         output = self.Kp * error + self.Ki * self._integral + self.Kd * derivative
-
-        self._previous_error = error
 
         # Apply output limits
         if self.output_limits[0] is not None:
@@ -67,4 +74,8 @@ class PIDController:
         if self.output_limits[1] is not None:
             output = min(self.output_limits[1], output)
 
-        return int(output)
+        # Update state
+        self._last_time = current_time
+        self._last_error = error
+
+        return output
